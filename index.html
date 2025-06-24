@@ -1,0 +1,654 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catálogo Pure Garden - Vasos Premium</title>
+    <style>
+        /* Define a caixa de modelo para todos os elementos */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Estilos do corpo da página */
+        body {
+            font-family: 'Arial', sans-serif; /* Fonte padrão */
+            background: #000; /* Fundo preto */
+            overflow: hidden; /* Oculta o estouro de conteúdo */
+            height: 100vh; /* Altura total da viewport */
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Contêiner do livro para centralizar e adicionar perspectiva */
+        .livro-container {
+            width: 100vw; /* Largura total da viewport */
+            height: 100vh; /* Altura total da viewport */
+            position: relative;
+            perspective: 2000px; /* Adiciona perspectiva 3D */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estilos do livro (o elemento que contém as páginas) */
+        .livro {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d; /* Preserva transformações 3D dos filhos */
+            transition: transform 0.6s; /* Transição suave para o livro */
+        }
+
+        /* Estilos básicos de cada página */
+        .pagina {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: #000; /* Fundo preto da página */
+            backface-visibility: hidden; /* Oculta a face de trás durante a virada */
+            transform-origin: left center; /* Ponto de origem da transformação no centro esquerdo */
+            transition: transform 0.8s cubic-bezier(0.645, 0.045, 0.355, 1); /* Transição para virar a página */
+            overflow: hidden; /* Oculta conteúdo que transborda */
+            opacity: 0; /* Começa invisível */
+            visibility: hidden; /* Torna a página invisível */
+        }
+
+        /* Página ativa, visível e com maior z-index */
+        .pagina.ativa {
+            opacity: 1;
+            visibility: visible;
+            z-index: 10;
+        }
+
+        /* Página que ainda não foi virada (mantém a posição original) */
+        .pagina.direita {
+            transform: rotateY(0deg);
+        }
+
+        /* Página que foi virada (rotação de -180 graus) */
+        .pagina.virada {
+            transform: rotateY(-180deg);
+        }
+
+        /* Contêiner para o conteúdo dentro de cada página */
+        .conteudo-pagina {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Estilos da imagem do produto */
+        .imagem-produto {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cobre o contêiner, cortando se necessário */
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 1;
+        }
+
+        /* Informações do produto (nome, preço, opções) */
+        .info-produto {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            /* Gradiente de fundo para contraste com a imagem */
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.7) 50%, rgba(0,0,0,0) 100%);
+            padding: 30px 20px 20px;
+            z-index: 2; /* Acima da imagem */
+            display: flex;
+            flex-direction: column;
+            gap: 15px; /* Espaçamento entre os elementos */
+        }
+
+        /* Estilos do nome do produto */
+        .nome-produto {
+            font-size: 24px;
+            font-weight: bold;
+            color: white;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5); /* Sombra para legibilidade */
+        }
+
+        /* Estilos do preço do produto */
+        .preco-produto {
+            font-size: 36px;
+            color: #4CAF50; /* Verde vibrante */
+            font-weight: bold;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+        }
+
+        /* Linha para organizar opções e botão de WhatsApp */
+        .info-linha {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+            flex-wrap: wrap; /* Quebra linha em telas menores */
+        }
+
+        /* Estilos para as caixas de seleção de opções (cor, tamanho) */
+        .opcoes-produto {
+            flex: 1;
+            max-width: 250px;
+        }
+
+        .opcoes-produto label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: white; /* Cor do texto do label */
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+        }
+
+        .opcoes-produto select {
+            width: 100%;
+            padding: 12px;
+            border: none; /* Sem borda inicial */
+            border-radius: 10px; /* Cantos arredondados */
+            font-size: 16px;
+            background: rgba(255,255,255,0.9); /* Fundo branco semi-transparente */
+            cursor: pointer;
+            transition: all 0.3s; /* Transição suave para hover/focus */
+        }
+
+        .opcoes-produto select:focus {
+            outline: none; /* Remove o contorno padrão do foco */
+            background: white;
+            transform: scale(1.02); /* Pequeno aumento no foco */
+        }
+
+        /* Botão do WhatsApp */
+        .btn-whatsapp {
+            background: #25D366; /* Verde do WhatsApp */
+            color: white;
+            padding: 18px 40px;
+            border: none;
+            border-radius: 50px; /* Botão em formato de pílula */
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            transition: all 0.3s ease; /* Transição suave para hover */
+            box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5); /* Sombra suave */
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: pulse 2s infinite; /* Animação de pulso */
+        }
+
+        /* Animação de pulso para o botão WhatsApp */
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 15px 40px rgba(37, 211, 102, 0.7);
+            }
+            100% {
+                transform: scale(1);
+                box-shadow: 0 10px 30px rgba(37, 211, 102, 0.5);
+            }
+        }
+
+        /* Efeito de hover no botão WhatsApp */
+        .btn-whatsapp:hover {
+            transform: scale(1.1);
+            box-shadow: 0 15px 40px rgba(37, 211, 102, 0.8);
+            animation: none; /* Desativa o pulso no hover */
+        }
+
+        /* Controles de navegação (botões de seta) */
+        .navegacao {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 100; /* Acima de outros elementos */
+        }
+
+        /* Estilos dos botões de navegação */
+        .btn-nav {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%; /* Botão circular */
+            background: white;
+            border: 3px solid #4CAF50; /* Borda verde */
+            color: #4CAF50; /* Cor do ícone */
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Efeito de hover nos botões de navegação */
+        .btn-nav:hover:not(:disabled) {
+            background: #4CAF50;
+            color: white;
+            transform: scale(1.1);
+        }
+
+        /* Estilos para botões desabilitados */
+        .btn-nav:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* Indicador de página (ex: "Página 1 de 3") */
+        .indicador-pagina {
+            position: fixed;
+            top: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            font-weight: bold;
+            color: #333;
+            z-index: 100;
+        }
+
+        /* Página de capa */
+        .capa {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Gradiente roxo/azul */
+            color: white;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .capa h1 {
+            font-size: 72px;
+            margin-bottom: 20px;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.3);
+        }
+
+        .capa p {
+            font-size: 32px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        /* Media queries para responsividade em telas menores (ex: celulares) */
+        @media (max-width: 768px) {
+            .imagem-produto {
+                object-fit: cover;
+                object-position: center; /* Centraliza a imagem em mobile */
+            }
+
+            .info-produto {
+                padding: 20px 15px 15px;
+            }
+
+            .nome-produto {
+                font-size: 20px;
+            }
+
+            .preco-produto {
+                font-size: 28px;
+            }
+
+            .info-linha {
+                flex-direction: column; /* Pilha os elementos em coluna */
+                gap: 15px;
+            }
+
+            .opcoes-produto {
+                max-width: 100%; /* Ocupa a largura total */
+            }
+
+            .btn-whatsapp {
+                font-size: 18px;
+                padding: 15px 30px;
+            }
+
+            .navegacao {
+                bottom: 20px;
+            }
+
+            .btn-nav {
+                width: 50px;
+                height: 50px;
+                font-size: 20px;
+                background: rgba(255,255,255,0.9); /* Fundo semi-transparente para botões nav */
+            }
+
+            .indicador-pagina {
+                top: 20px;
+                font-size: 14px;
+                background: rgba(255,255,255,0.9); /* Fundo semi-transparente para indicador */
+            }
+
+            .capa h1 {
+                font-size: 48px;
+            }
+
+            .capa p {
+                font-size: 24px;
+            }
+        }
+
+        /* Animação de entrada para imagens */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .pagina.ativa .imagem-produto {
+            animation: fadeIn 0.8s ease-out forwards;
+        }
+    </style>
+</head>
+<body>
+    <div class="livro-container">
+        <div class="indicador-pagina" id="indicadorPagina">Capa</div>
+        
+        <div class="livro" id="livro">
+            <!-- As páginas serão inseridas aqui pelo JavaScript -->
+        </div>
+        
+        <div class="navegacao">
+            <button class="btn-nav" id="btnAnterior" onclick="virarPagina(-1)">←</button>
+            <button class="btn-nav" id="btnProxima" onclick="virarPagina(1)">→</button>
+        </div>
+    </div>
+
+    <script>
+        // Dados dos produtos
+        // ATENÇÃO: As imagens são placeholders do placehold.co, exceto a primeira imagem mobile.
+        // Para usar suas próprias imagens, substitua os URLs por caminhos válidos para seus arquivos.
+        // Recomenda-se:
+        // - imagemPC: 1920x1080 pixels (Full HD - horizontal)
+        // - imagemMobile: 1080x1920 pixels (Full HD - vertical)
+        const produtos = [
+            {
+                id: 1,
+                nome: "Vaso Zen",
+                ref: "PG.001",
+                imagemPC: "src/img/vaso1pc.png",
+                // Caminho da sua imagem mobile fornecida:
+                imagemMobile: "src/img/vaso1.png", // Imagem fornecida pelo usuário
+                precoBase: 89.90,
+                precoPintura: 20.00,
+                tamanhos: ["35 cm", "60 cm"],
+                cores: ["Preto", "Cinza", "Azul", "Rosa"]
+            },
+            {
+                id: 2,
+                nome: "Vaso Versátil",
+                ref: "PG.003",
+                imagemPC: "src/img/vaso1pc.png",
+                imagemMobile: "src/img/vaso2.png",
+                precoBase: 129.90,
+                precoPintura: 20.00,
+                tamanhos: ["35 cm", "60 cm"],
+                cores: ["Preto", "Cinza", "Azul", "Rosa"]
+            },
+            {
+                id: 3,
+                nome: "Vaso Elegance",
+                ref: "PG.005",
+                imagemPC: "https://placehold.co/1920x1080/000000/FFFFFF/png?text=Vaso+Elegance+%28PC%29",
+                imagemMobile: "src/img/vaso3.png",
+                precoBase: 159.90,
+                precoPintura: 20.00,
+                tamanhos: ["40 cm", "70 cm"],
+                cores: ["Preto", "Branco", "Azul", "Verde"]
+            }
+        ];
+
+        let paginaAtual = 0;
+        const numeroWhatsApp = "5511999999999"; // Coloque o número do WhatsApp aqui
+
+        /**
+         * Cria dinamicamente as páginas do catálogo com base nos dados dos produtos.
+         * Adiciona uma capa e depois as páginas de cada produto ao elemento 'livro'.
+         */
+        function criarPaginas() {
+            const livro = document.getElementById('livro');
+            livro.innerHTML = ''; // Limpa o livro antes de criar as páginas
+
+            // Criar capa
+            const capa = document.createElement('div');
+            capa.className = 'pagina direita ativa'; // Capa é a primeira página ativa
+            capa.innerHTML = `
+                <div class="conteudo-pagina">
+                    <div class="capa">
+                        <h1>PURE GARDEN</h1>
+                        <p>Catálogo de Vasos Premium</p>
+                    </div>
+                </div>
+            `;
+            livro.appendChild(capa);
+            
+            // Criar páginas dos produtos
+            produtos.forEach((produto, index) => {
+                const pagina = document.createElement('div');
+                pagina.className = 'pagina direita'; // Todas as outras páginas começam viradas para a direita
+                
+                pagina.innerHTML = `
+                    <div class="conteudo-pagina">
+                        <picture>
+                            <source media="(max-width: 768px)" srcset="${produto.imagemMobile}" onerror="this.srcset='https://placehold.co/1080x1920/FF0000/FFFFFF?text=Erro+imagem+Mobile'">
+                            <source media="(min-width: 769px)" srcset="${produto.imagemPC}" onerror="this.srcset='https://placehold.co/1920x1080/FF0000/FFFFFF?text=Erro+imagem+PC'">
+                            <img src="${produto.imagemPC}" alt="${produto.nome}" class="imagem-produto" onerror="this.src='https://placehold.co/1920x1080/FF0000/FFFFFF?text=Erro+imagem+PC'">
+                        </picture>
+                        
+                        <div class="info-produto">
+                            <h2 class="nome-produto">${produto.nome} - Ref: ${produto.ref}</h2>
+                            <div class="preco-produto" id="preco-${produto.id}">R$ ${produto.precoBase.toFixed(2)}</div>
+                            
+                            <div class="info-linha">
+                                <div class="opcoes-produto">
+                                    <label>Cor:</label>
+                                    <select id="cor-${produto.id}" onchange="atualizarPreco(${produto.id}, ${produto.precoBase}, ${produto.precoPintura})">
+                                        <option value="natural">Natural (sem pintura)</option>
+                                        ${produto.cores.map(cor => `<option value="${cor}">${cor} (+R$ ${produto.precoPintura.toFixed(2)})</option>`).join('')}
+                                    </select>
+                                </div>
+                                
+                                <button class="btn-whatsapp" onclick="enviarWhatsApp(${produto.id}, '${produto.nome}', '${produto.ref}', ${produto.precoBase}, ${produto.precoPintura})">
+                                    <!-- Ícone do WhatsApp em SVG -->
+                                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M12.031 1.172c-5.963 0-10.812 4.848-10.812 10.812 0 1.901.492 3.693 1.357 5.246l-1.404 5.125 5.246-1.377c1.501.822 3.221 1.293 5.045 1.293h.004c5.961 0 10.811-4.848 10.811-10.812s-4.85-10.287-10.247-10.287zm5.421 15.433c-.227.637-1.328 1.219-1.857 1.293-.529.074-1.191.106-1.919-.121-.443-.139-.014-.225-1.404-.582-3.892-1.996-6.369-5.536-6.56-5.792-.188-.254-1.57-2.086-1.57-3.98 0-1.895.995-2.826 1.348-3.211.354-.387.773-.484 1.029-.484.255 0 .51.002.73.014.236.012.552-.09.863.658.312.752 1.059 2.586 1.152 2.773.094.188.158.406.033.66-.127.254-.188.41-.377.635-.188.223-.396.498-.565.668-.188.186-.383.387-.164.76.219.371.975 1.605 2.093 2.598 1.439 1.279 2.654 1.678 3.031 1.865.377.188.598.158.816-.096.221-.254.936-1.09 1.186-1.467.252-.375.502-.312.848-.188.346.127 2.193 1.033 2.568 1.221.377.188.629.283.723.439.092.156.092.908-.137 1.545z"/>
+                                    </svg>
+                                    Comprar
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                livro.appendChild(pagina);
+            });
+            
+            atualizarIndicador();
+        }
+
+        /**
+         * Vira a página do catálogo para a próxima ou anterior.
+         * @param {number} direcao - 1 para avançar, -1 para retroceder.
+         */
+        function virarPagina(direcao) {
+            const paginas = document.querySelectorAll('.pagina');
+            const totalPaginas = paginas.length;
+            
+            // Calcular nova página
+            const novaPagina = paginaAtual + direcao;
+            
+            // Verificar limites para evitar ir além das páginas existentes
+            if (novaPagina < 0 || novaPagina >= totalPaginas) return;
+            
+            // Remover classe ativa da página atual
+            paginas[paginaAtual].classList.remove('ativa');
+            
+            // Animar transição
+            if (direcao > 0) {
+                // Virando para frente: a página atual vira
+                paginas[paginaAtual].classList.add('virada');
+                setTimeout(() => {
+                    // Após um breve atraso, a nova página se torna ativa
+                    paginas[novaPagina].classList.add('ativa');
+                }, 100);
+            } else {
+                // Virando para trás: a página anterior "desvira"
+                paginas[novaPagina].classList.remove('virada');
+                setTimeout(() => {
+                    // Após um breve atraso, a nova página se torna ativa
+                    paginas[novaPagina].classList.add('ativa');
+                }, 100);
+            }
+            
+            // Atualizar página atual
+            paginaAtual = novaPagina;
+            
+            // Atualizar controles e indicador de página
+            atualizarControles();
+            atualizarIndicador();
+        }
+
+        /**
+         * Habilita ou desabilita os botões de navegação
+         * com base na página atual.
+         */
+        function atualizarControles() {
+            const totalPaginas = document.querySelectorAll('.pagina').length;
+            document.getElementById('btnAnterior').disabled = paginaAtual === 0;
+            document.getElementById('btnProxima').disabled = paginaAtual === totalPaginas - 1;
+        }
+
+        /**
+         * Atualiza o texto do indicador de página na parte superior.
+         */
+        function atualizarIndicador() {
+            const indicador = document.getElementById('indicadorPagina');
+            if (paginaAtual === 0) {
+                indicador.textContent = 'Capa';
+            } else {
+                indicador.textContent = `Página ${paginaAtual} de ${produtos.length}`;
+            }
+        }
+
+        /**
+         * Atualiza o preço do produto exibido com base na cor selecionada.
+         * @param {number} produtoId - O ID do produto.
+         * @param {number} precoBase - O preço base do produto.
+         * @param {number} precoPintura - O custo adicional para pintura.
+         */
+        function atualizarPreco(produtoId, precoBase, precoPintura) {
+            const selectCor = document.getElementById(`cor-${produtoId}`);
+            const elementoPreco = document.getElementById(`preco-${produtoId}`);
+            
+            const corSelecionada = selectCor.value;
+            // Se a cor selecionada for 'natural', o preço é apenas o base; caso contrário, adiciona o custo da pintura.
+            const precoFinal = corSelecionada === 'natural' ? precoBase : precoBase + precoPintura;
+            
+            elementoPreco.textContent = `R$ ${precoFinal.toFixed(2)}`;
+        }
+
+        /**
+         * Envia uma mensagem pré-formatada para o WhatsApp
+         * com os detalhes do produto e opções selecionadas.
+         * @param {number} produtoId - O ID do produto.
+         * @param {string} nomeProduto - O nome do produto.
+         * @param {string} ref - A referência do produto.
+         * @param {number} precoBase - O preço base do produto.
+         * @param {number} precoPintura - O custo adicional para pintura.
+         */
+        function enviarWhatsApp(produtoId, nomeProduto, ref, precoBase, precoPintura) {
+            const selectCor = document.getElementById(`cor-${produtoId}`);
+            
+            const corSelecionada = selectCor.value;
+            // Define o texto da cor, se for natural ou a cor selecionada
+            const corTexto = corSelecionada === 'natural' ? 'Natural (sem pintura)' : corSelecionada;
+            const precoFinal = corSelecionada === 'natural' ? precoBase : precoBase + precoPintura;
+            
+            // Monta a mensagem para o WhatsApp
+            const mensagem = `Olá! Gostaria de comprar o seguinte produto:
+
+🌿 *${nomeProduto}*
+📌 Referência: ${ref}
+🎨 Cor: ${corTexto}
+💰 Valor: R$ ${precoFinal.toFixed(2)}
+${corSelecionada !== 'natural' ? `\n✨ Inclui pintura personalizada (+R$ ${precoPintura.toFixed(2)})` : ''}
+
+Por favor, me informe sobre disponibilidade e prazo de entrega.`;
+            
+            // Codifica a mensagem para URL e abre o WhatsApp
+            const mensagemCodificada = encodeURIComponent(mensagem);
+            const urlWhatsApp = `https://wa.me/${numeroWhatsApp}?text=${mensagemCodificada}`;
+            
+            window.open(urlWhatsApp, '_blank'); // Abre em uma nova aba
+        }
+
+        // Suporte a gestos de toque para navegação em dispositivos móveis
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            handleSwipe();
+        });
+
+        /**
+         * Lida com o gesto de swipe (arrastar) para virar as páginas.
+         */
+        function handleSwipe() {
+            const swipeThreshold = 50; // Distância mínima para considerar um swipe
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe para esquerda - próxima página
+                    virarPagina(1);
+                } else {
+                    // Swipe para direita - página anterior
+                    virarPagina(-1);
+                }
+            }
+        }
+
+        // Navegação por teclado (setas esquerda e direita)
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight') virarPagina(1);
+            if (e.key === 'ArrowLeft') virarPagina(-1);
+        });
+
+        // Inicializar o catálogo quando o DOM estiver completamente carregado
+        document.addEventListener('DOMContentLoaded', () => {
+            criarPaginas();
+            atualizarControles();
+        });
+    </script>
+</body>
+</html>
