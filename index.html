@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Catálogo Pure Garden - Vasos Premium</title>
+    <title></title>
     <style>
         /* Define a caixa de modelo para todos os elementos */
         * {
@@ -269,7 +269,7 @@
 
         /* Página de capa */
         .capa {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Gradiente roxo/azul */
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); /* Gradiente de fallback */
             color: white;
             text-align: center;
             width: 100%;
@@ -278,6 +278,30 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
+            position: relative; /* Para posicionar o conteúdo e a imagem */
+            overflow: hidden; /* Garante que a imagem não transborde */
+        }
+
+        .capa-imagem {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Faz a imagem cobrir toda a área */
+            z-index: 0; /* Fica abaixo do conteúdo da capa */
+        }
+
+        .capa-conteudo {
+            position: relative; /* Garante que o conteúdo fique acima da imagem */
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%; /* Ocupa a altura total para centralizar */
+            width: 100%; /* Ocupa a largura total */
+            background: rgba(0, 0, 0, 0.4); /* Overlay escuro para melhorar a legibilidade do texto */
         }
 
         .capa h1 {
@@ -380,9 +404,17 @@
     </div>
 
     <script>
+        // Dados da capa
+        const capaData = {
+            // Imagem para a capa. Certifique-se de que este caminho está correto.
+            imagemPC: "src/img/capa-pc.png", // Exemplo de imagem para PC
+            imagemMobile: "src/img/capa-cell.png", // Exemplo de imagem para Mobile
+            titulo: " ",
+            subtitulo: ""
+        };
+
         // Dados dos produtos
-        // ATENÇÃO: As imagens são placeholders do placehold.co, exceto a primeira imagem mobile.
-        // Para usar suas próprias imagens, substitua os URLs por caminhos válidos para seus arquivos.
+        // ATENÇÃO: As imagens devem estar nos caminhos corretos.
         // Recomenda-se:
         // - imagemPC: 1920x1080 pixels (Full HD - horizontal)
         // - imagemMobile: 1080x1920 pixels (Full HD - vertical)
@@ -392,8 +424,7 @@
                 nome: "Vaso Zen",
                 ref: "PG.001",
                 imagemPC: "src/img/vaso1pc.png",
-                // Caminho da sua imagem mobile fornecida:
-                imagemMobile: "src/img/vaso1.png", // Imagem fornecida pelo usuário
+                imagemMobile: "src/img/vaso1.png",
                 precoBase: 89.90,
                 precoPintura: 20.00,
                 tamanhos: ["35 cm", "60 cm"],
@@ -403,7 +434,8 @@
                 id: 2,
                 nome: "Vaso Versátil",
                 ref: "PG.003",
-                imagemPC: "src/img/vaso1pc.png",
+                // Mantendo o caminho que você forneceu, mas idealmente seria vaso2pc.png se houver
+                imagemPC: "src/img/vaso1pc.png", 
                 imagemMobile: "src/img/vaso2.png",
                 precoBase: 129.90,
                 precoPintura: 20.00,
@@ -414,6 +446,7 @@
                 id: 3,
                 nome: "Vaso Elegance",
                 ref: "PG.005",
+                // Substitua por "src/img/vaso3pc.png" se tiver essa imagem
                 imagemPC: "https://placehold.co/1920x1080/000000/FFFFFF/png?text=Vaso+Elegance+%28PC%29",
                 imagemMobile: "src/img/vaso3.png",
                 precoBase: 159.90,
@@ -440,8 +473,16 @@
             capa.innerHTML = `
                 <div class="conteudo-pagina">
                     <div class="capa">
-                        <h1>PURE GARDEN</h1>
-                        <p>Catálogo de Vasos Premium</p>
+                        <!-- Imagem da capa para desktop e mobile -->
+                        <picture>
+                            <source media="(max-width: 768px)" srcset="${capaData.imagemMobile}" onerror="this.srcset='https://placehold.co/1080x1920/FF0000/FFFFFF?text=Erro+Capa+Mobile'">
+                            <source media="(min-width: 769px)" srcset="${capaData.imagemPC}" onerror="this.srcset='https://placehold.co/1920x1080/FF0000/FFFFFF?text=Erro+Capa+PC'">
+                            <img src="${capaData.imagemPC}" alt="Capa Pure Garden" class="capa-imagem" onerror="this.src='https://placehold.co/1920x1080/FF0000/FFFFFF?text=Erro+Capa+PC'">
+                        </picture>
+                        <div class="capa-conteudo">
+                            <h1>${capaData.titulo}</h1>
+                            <p>${capaData.subtitulo}</p>
+                        </div>
                     </div>
                 </div>
             `;
